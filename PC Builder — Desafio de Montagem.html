@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PC Builder — Desafio de Montagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0a13;--s:#16121f;--l:#2e2744;--g:#35e08e;--p:#9a6bff;--t:#ece8f6;--m:#a49cba;--e:#ff5d73;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:inherit}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif;min-height:100vh}
+h1,h2,h3,.f{font-family:'Chakra Petch',system-ui,sans-serif;margin:0}
+button,select,input{font:inherit;color:var(--t);background:var(--s);border:1px solid var(--l);border-radius:8px;padding:8px 14px}
+button{cursor:pointer}button:hover{border-color:var(--p)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+button.pri{background:var(--g);color:#06150d;border-color:var(--g);font-weight:600}
+button:disabled{opacity:.4;cursor:not-allowed}
+#menu{max-width:980px;margin:0 auto;padding:40px 18px}
+#menu h1{font-size:clamp(28px,5vw,46px)}#menu p{color:var(--m)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:26px}
+.card{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:20px;color:var(--g)}.card:nth-child(2) h3{color:var(--p)}.card p{margin:0;flex:1}
+#bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--l)}
+#stats{margin-left:auto;display:flex;gap:16px;color:var(--m)}#stats b{color:var(--g);font-family:'Chakra Petch'}
+#main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px;padding:12px}
+@media(max-width:900px){#main{grid-template-columns:1fr}}
+#bench{border:1px solid var(--l);border-radius:12px;background:linear-gradient(#2e274433 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,#2e274433 1px,transparent 1px) 0 0/28px 28px,#0f0c18;overflow:hidden}
+svg{width:100%;height:auto;display:block;touch-action:none;user-select:none}
+svg text{fill:#a49cba;font:10px 'IBM Plex Sans',sans-serif;pointer-events:none}
+[data-t]{cursor:grab}
+#bench3{border:1px solid var(--l);border-radius:12px;overflow:hidden;background:#0f0c18}#bench3 canvas{display:block;width:100%;touch-action:none}
+#side{display:flex;flex-direction:column;gap:12px}
+.box{background:var(--s);border:1px solid var(--l);border-radius:12px;padding:12px}
+#pb{height:8px;background:var(--l);border-radius:6px;overflow:hidden;margin:6px 0 10px}
+#pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p),var(--g));transition:width .3s}
+.t{display:flex;gap:8px;padding:3px 0;font-size:13px}
+.d{width:12px;height:12px;border-radius:50%;border:2px solid var(--m);flex:none;margin-top:5px}
+.t.done .d{background:var(--g);border-color:var(--g)}.t.bad .d{background:var(--e);border-color:var(--e)}.t.done{color:var(--m)}
+#fb,#qf{min-height:84px;border-left:4px solid var(--p)}#fb.ok,#qf.ok{border-left-color:var(--g)}#fb.err,#qf.err{border-left-color:var(--e)}
+.ov{position:fixed;inset:0;background:#05030bdd;display:none;place-items:center;padding:16px;z-index:5;overflow:auto}
+.ov.on{display:grid}
+.dlg{background:var(--s);border:1px solid var(--p);border-radius:16px;padding:24px;max-width:580px;width:100%;animation:pop .35s ease-out}
+.dlg h2{font-size:24px;margin-bottom:10px;color:var(--g)}.dlg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.kv div{background:#0f0c18;border-radius:8px;padding:8px 10px}
+.kv b{display:block;font-size:20px;color:var(--g);font-family:'Chakra Petch'}.kv span{color:var(--m);font-size:12px}
+.dlg ul,.dlg ol{margin:4px 0 10px;padding-left:20px;font-size:14px}
+@keyframes pop{from{transform:scale(.94);opacity:0}}
+.op{text-align:left;width:100%}.op.sel{border-color:var(--p);background:#241c3a}.op.ok{background:#12402c;border-color:var(--g)}.op.bad{background:#4a1722;border-color:var(--e)}.op:disabled{opacity:1;cursor:default}
+#menu{max-width:1280px}
+#mw{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:16px;align-items:start;margin-top:26px}#mw .cards{margin-top:0}
+#hp{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:14px;position:sticky;top:12px;max-height:calc(100vh - 40px);display:flex;flex-direction:column}
+#hp h3{font-size:14px;letter-spacing:.06em;color:var(--g);display:flex;align-items:center;gap:8px}
+#hp .ct{margin-left:auto;background:#241c3a;border:1px solid var(--p);border-radius:20px;padding:0 8px;font-size:12px;color:var(--t)}
+#hlist{overflow-y:auto;margin-top:10px;display:flex;flex-direction:column;gap:6px;min-height:0}
+.hi{display:block;width:100%;text-align:left;background:#0f0c18;border:1px solid var(--l);border-radius:10px;padding:8px 10px;transition:border-color .2s,background .2s}.hi:hover{border-color:var(--p);background:#1a1428}
+.hi .pt{color:var(--g);font-family:'Chakra Petch',system-ui,sans-serif;font-weight:700}.hi small{display:block;color:var(--m)}
+#hp .em{color:var(--m);font-size:13px;margin:0}#hpt{display:none}
+.cards{grid-template-columns:repeat(6,1fr)}.cards .card{grid-column:span 2}.cards .card:nth-child(n+4){grid-column:span 3}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.cards .card,.cards .card:nth-child(n+4){grid-column:auto}.cards .card:last-child{grid-column:1/-1}}
+@media(max-width:560px){.cards{grid-template-columns:1fr}.cards .card:last-child{grid-column:auto}}
+@media(max-width:900px){#mw{grid-template-columns:1fr}#hp{position:static;max-height:none}#hlist{max-height:240px}#hpt{display:block;margin-top:8px}#hp.cl #hlist{display:none}}
+@keyframes pulse{from{box-shadow:0 0 0 0 #ffd24a99}to{box-shadow:0 0 0 14px #ffd24a00}}
+.q-ex{border-left:4px solid #ffd24a!important;animation:pulse .9s}.q-eq{border-left:4px solid var(--g)!important}.q-pa{border-left:4px solid #ffb347!important}.q-wr{border-left:4px solid var(--e)!important}
+.hl{stroke:#35e08e!important;stroke-width:3!important;animation:pl .8s infinite alternate}@keyframes pl{to{stroke-opacity:.25}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<section id="menu">
+<h1>PC Builder — Desafio de Montagem</h1>
+<p>Monte um computador na bancada virtual e aprenda onde cada peça e cada cabo se encaixa.</p>
+<div id="mw"><aside id="hp" aria-label="Histórico de avaliações"></aside><div class="cards">
+<div class="card"><h3>Montagem Livre — Fácil</h3><p>Explore os componentes com todos os nomes visíveis e monte no seu próprio ritmo.</p><button class="pri" onclick="rules('free',0)">Iniciar modo fácil</button></div>
+<div class="card"><h3>Montagem Livre — Difícil</h3><p>Nomes de peças e cabos visíveis, mas sem rótulos nas conexões: descubra os encaixes pelo formato e pela posição.</p><button class="pri" onclick="rules('free',1)">Iniciar modo difícil</button></div>
+<div class="card"><h3>Identificação dos Cabos</h3><p>Aprenda a reconhecer os cabos de alimentação e de dados e descubra onde conectá-los.</p>
+<select id="lvl" aria-label="Nível"><option value="1">Nível 1 — Aprendizagem</option><option value="2">Nível 2 — Identificação</option><option value="3">Nível 3 — Desafio</option></select>
+<button class="pri" onclick="rules('ident')">Iniciar identificação</button></div>
+<div class="card"><h3>Identifique os Componentes</h3><p>Reconheça peças, cabos e conexões em perguntas de múltipla escolha e descubra o que precisa revisar.</p><button class="pri" onclick="rules('quiz')">Iniciar identificação</button><button onclick="photoDlg()">Gerenciar fotos</button></div>
+<div class="card"><h3>Modo Avaliação</h3><p>Teste seus conhecimentos, conclua a montagem e confira sua pontuação.</p>
+<input id="nm" placeholder="Nome do aluno (obrigatório)" maxlength="40"><button class="pri" onclick="rules('eval')">Iniciar avaliação</button></div>
+</div>
+</div></section>
+
+<section id="game" hidden>
+<div id="bar"><h3 id="mode"></h3>
+<button id="bt-hint" onclick="hint()">Dica</button><button onclick="check()">Conferir</button><button onclick="restart()">Reiniciar</button><button id="bt-v" onclick="toggleView()" hidden>Ver em 2D</button><button id="bt-cam" onclick="G3.reset()" hidden>Câmera inicial</button><button id="bt-ctr" onclick="G3.center()" hidden>Centralizar bancada</button><button id="bt-fin" onclick="finish()">Encerrar avaliação</button><button onclick="toMenu()">Menu</button>
+<div id="stats"><span id="s-t">Tempo <b id="tm">0:00</b></span><span id="s-e">Erros <b id="er">0</b></span><span id="s-s">Pontos <b id="sc">0</b></span></div></div>
+<div id="main"><div id="bench"><svg id="sv" viewBox="0 0 900 560" role="img" aria-label="Bancada de montagem"></svg></div><div id="bench3" hidden title="Arraste para girar · Espaço + arraste para deslocar · Scroll para zoom"></div>
+<aside id="side"><div class="box"><h3 class="f" style="font-size:16px">Objetivos <span id="pct" style="color:var(--g)"></span></h3><div id="pb"><i></i></div><div id="tl"></div></div>
+<div class="box" id="fb" aria-live="polite"></div></aside></div></section>
+
+<section id="quiz" hidden><div style="max-width:720px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3>Identifique os Componentes</h3><span id="qp" style="color:var(--m);margin-left:auto"></span><button onclick="toMenu()">Menu</button></div><div class="box" style="background:#0f0c18"><div style="height:6px;background:var(--l);border-radius:4px;margin-bottom:8px"><i id="qpi" style="display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p),var(--g));border-radius:4px"></i></div><img id="qimg" alt="Fotografia do item a ser identificado" hidden style="width:100%;max-height:46vh;object-fit:contain;display:block"><svg id="qs" viewBox="0 0 400 260" style="max-height:46vh"></svg><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><small id="qnote" style="color:var(--m)"></small><button id="qtg" hidden>Alternar foto geral / close-up</button></div></div><div class="box"><div id="qq" style="font-weight:600;margin-bottom:8px"></div><div id="qo" style="display:grid;gap:8px"></div><div style="margin-top:10px"><button class="pri" id="qb" onclick="qGo()" disabled>Confirmar resposta</button></div></div><div class="box" id="qf" aria-live="polite"></div></div></section>
+<div class="ov" id="rl"><div class="dlg"><h2 id="rt"></h2><p id="rp"></p><div class="row"><button class="pri" id="go">Começar</button><button onclick="$('#rl').classList.remove('on')">Voltar</button></div></div></div>
+<div class="ov" id="end"><div class="dlg" id="ed"></div></div>
+
+<script>
+const $=q=>document.querySelector(q),sv=$('#sv');
+const CFG={partPts:8,cablePts:12,bonus:8,errPen:4,hintPen:3,max:100,
+ bands:[[90,'Excelente'],[75,'Bom'],[60,'Regular'],[0,'Precisa praticar']],
+ hintMax:{free:3,i1:3,i2:2,i3:0,eval:3}};
+const PARTS={
+ cpu:{k:'cpu',n:'Processador',w:66,h:66,home:[60,60],fn:'executa as instruções do computador e encaixa no soquete.',ok:'Correto! A CPU está instalada no soquete.',err:'A CPU só encaixa no soquete quadrado.'},
+ ram1:{k:'ram',n:'Memória RAM 1',w:16,h:146,home:[70,150],fn:'guarda os dados em uso e encaixa nos slots longos e estreitos.',ok:'Correto! Memória RAM instalada.',err:'A RAM encaixa nos slots longos e estreitos.'},
+ ram2:{k:'ram',n:'Memória RAM 2',w:16,h:146,home:[130,150],fn:'guarda os dados em uso e encaixa nos slots longos e estreitos.',ok:'Correto! Memória RAM instalada.',err:'A RAM encaixa nos slots longos e estreitos.'},
+ gpu:{k:'gpu',n:'Placa de vídeo',w:190,h:34,home:[30,340],fn:'gera a imagem; usa o slot PCIe x16 e energia PCIe de 6 pinos.',ok:'Correto! A placa de vídeo está no slot PCIe x16. Falta a alimentação auxiliar.',err:'A placa de vídeo usa o slot PCI Express x16, o mais longo.'}};
+const SL={cpu:{k:'cpu',x:300,y:80,w:70,h:70,n:'Soquete da CPU'},ramA:{k:'ram',x:430,y:70,w:18,h:150,n:'Slot de RAM'},ramB:{k:'ram',x:458,y:70,w:18,h:150,n:'Slot de RAM'},pcie:{k:'gpu',x:290,y:330,w:190,h:20,n:'Slot PCIe x16'}};
+const DIMC={atx:[48,14,2,12],cpu4:[16,14,2,2],pcie6:[22,14,2,3],sdata:[26,9,1,7],spwr:[38,9,1,15]};
+const CAB={
+ atx:{n:'Cabo ATX de 24 pinos',s:'ATX 24',c:'#f0b73a',fn:'alimentação principal da placa-mãe.',ok:'Correto! O cabo ATX de 24 pinos fornece alimentação principal à placa-mãe.',err:'O ATX de 24 pinos é o conector largo: liga a fonte ao conector principal da placa-mãe.'},
+ cpu4:{n:'Cabo de CPU de 4 pinos',s:'CPU 4',c:'#ff7a59',fn:'alimentação do processador.',ok:'Correto! O cabo de 4 pinos alimenta o processador.',err:'Este cabo alimenta o processador. Procure o conector de CPU próximo ao soquete.'},
+ pcie6:{n:'Cabo PCIe de 6 pinos',s:'PCIe 6',c:'#4aa8ff',fn:'alimentação auxiliar da placa de vídeo.',ok:'Correto! O PCIe de 6 pinos alimenta a placa de vídeo.',err:'O PCIe de 6 pinos só encaixa na entrada auxiliar da GPU.'},
+ sdata:{n:'Cabo SATA de dados',s:'SATA D',c:'#ff5fa8',fn:'comunicação entre o HD e a placa-mãe.',ok:'Correto! O cabo SATA de dados conecta o HD à placa-mãe.',err:'Atenção: o cabo SATA de alimentação vem da fonte, enquanto o cabo SATA de dados conecta o HD à placa-mãe.'},
+ spwr:{n:'Cabo SATA de alimentação',s:'SATA P',c:'#43d6d0',fn:'fornece energia da fonte ao HD.',ok:'Correto! O cabo SATA de alimentação leva energia da fonte ao HD.',err:'Atenção: o cabo SATA de alimentação vem da fonte, enquanto o cabo SATA de dados conecta o HD à placa-mãe.'}};
+const SK={psu_atx:{k:'psu_atx',x:688,y:56},psu_cpu:{k:'psu_cpu',x:688,y:96},psu_pcie:{k:'psu_pcie',x:688,y:134},psu_sata:{k:'psu_sata',x:688,y:172},
+ mb_atx:{k:'mb_atx',x:588,y:150},mb_cpu:{k:'mb_cpu',x:300,y:52},mb_sata1:{k:'mb_sata',x:598,y:400},mb_sata2:{k:'mb_sata',x:598,y:424},mb_sata3:{k:'mb_sata',x:598,y:448},
+ hdd_data:{k:'hdd_data',x:688,y:410},hdd_pwr:{k:'hdd_pwr',x:688,y:446},gpu6:{k:'gpu6'}};
+const KC={psu_atx:'atx',mb_atx:'atx',psu_cpu:'cpu4',mb_cpu:'cpu4',psu_pcie:'pcie6',gpu6:'pcie6',mb_sata:'sdata',hdd_data:'sdata',psu_sata:'spwr',hdd_pwr:'spwr'};
+const SIDE={psu_atx:0,mb_atx:1,psu_cpu:0,mb_cpu:1,psu_pcie:0,gpu6:1,mb_sata:0,hdd_data:1,psu_sata:0,hdd_pwr:1};
+const KN={psu_atx:'ATX 24 pinos',mb_atx:'ATX 24 pinos',psu_cpu:'CPU 4 pinos',mb_cpu:'CPU 4 pinos',psu_pcie:'PCIe 6 pinos',gpu6:'PCIe 6 pinos',mb_sata:'SATA',hdd_data:'SATA dados',psu_sata:'SATA alim.',hdd_pwr:'SATA alim.'};
+const TK=[['cpu','Processador instalado'],['ram1','Primeira memória RAM instalada'],['ram2','Segunda memória RAM instalada'],['gpu','Placa de vídeo instalada'],['atx','Cabo ATX de 24 pinos conectado'],['cpu4','Cabo de alimentação da CPU de 4 pinos conectado'],['pcie6','Cabo PCIe de 6 pinos conectado'],['sdata','Cabo SATA de dados conectado nas duas extremidades'],['spwr','Cabo SATA de alimentação conectado nas duas extremidades']];
+const H={
+ cpu:['Comece pelo soquete quadrado, no alto da placa-mãe.','A CPU executa as instruções do computador e encaixa no soquete.','Arraste a CPU até o soquete quadrado, à esquerda dos slots de memória.'],
+ ram1:['Os slots de memória são as ranhuras longas e estreitas, no alto da placa.','A memória RAM guarda os dados em uso; cada pente ocupa um slot.','Arraste um pente de RAM até um dos dois slots verticais, ao lado do soquete.'],
+ gpu:['Veja a parte de baixo da placa-mãe.','A placa de vídeo gera a imagem e usa o slot PCI Express x16, o mais longo.','Arraste a placa de vídeo até o slot horizontal comprido, na parte inferior.'],
+ atx:['Procure o maior conector da fonte e da placa.','O cabo ATX de 24 pinos leva a alimentação principal à placa-mãe.','Ligue uma ponta na saída larga da fonte e a outra no conector largo, na lateral direita da placa.'],
+ cpu4:['Esse cabo é pequeno e vai perto do processador.','O cabo de 4 pinos alimenta o processador com energia dedicada.','Ligue uma ponta na saída de 4 pinos da fonte e a outra no conector no alto da placa, acima do soquete.'],
+ pcie6:['A placa de vídeo precisa de energia extra.','O cabo PCIe de 6 pinos alimenta a GPU direto da fonte.','Ligue uma ponta na saída PCIe da fonte e a outra no conector no topo da placa de vídeo.'],
+ sdata:['Este cabo não vem da fonte: liga o HD à placa-mãe.','O cabo SATA de dados leva informações entre o HD e a placa-mãe.','Ligue uma ponta em uma porta SATA no canto inferior direito da placa e a outra na porta de dados do HD (a mais estreita).'],
+ spwr:['Este cabo sai da fonte e vai até o HD.','O cabo SATA de alimentação energiza o HD.','Ligue uma ponta na saída SATA da fonte e a outra na entrada de alimentação do HD (a mais larga).']};
+H.ram2=H.ram1;
+const HT={cpu:['cpu'],ram1:['ramA','ramB'],ram2:['ramA','ramB'],gpu:['pcie'],atx:['psu_atx','mb_atx'],cpu4:['psu_cpu','mb_cpu'],pcie6:['psu_pcie','gpu6'],sdata:['mb_sata1','mb_sata2','mb_sata3','hdd_data'],spwr:['psu_sata','hdd_pwr']};
+const RULES={free:['Montagem Livre','Todos os componentes estão disponíveis. Instale as peças e conecte os cabos na ordem que quiser. Cada ação é validada na hora e os erros geram explicações, sem perder pontos. Use Dica e Conferir quando precisar.'],
+ ident:['Identificação dos Cabos','CPU, memórias e placa de vídeo já estão instaladas. Arraste as duas pontas de cada cabo até os conectores corretos. Nível 1: nomes e dicas visíveis. Nível 2: nomes ocultos, você reconhece pelo formato. Nível 3: sem nomes e sem dicas, com erros e tempo contados.'],
+ eval:['Modo Avaliação','Monte o computador completo sem nomes de conectores nem dicas visíveis. Cada acerto soma pontos; erros e dicas descontam. A nota máxima é 100 e o tempo é registrado. Você pode encerrar antes de terminar.'],
+ quiz:['Identifique os Componentes','Digite o nome de cada peça, cabo ou conexão apresentado. Não confunda o cabo com o conector onde ele é ligado. As perguntas são embaralhadas a cada tentativa e, no final, você recebe um relatório com o que revisar.']};
+let S=null,pend=null;
+
+const rams=()=>['ram1','ram2'].filter(p=>S.parts[p].slot).length;
+const done=id=>id=='cpu'?!!S.parts.cpu.slot:id=='ram1'?rams()>=1:id=='ram2'?rams()>=2:id=='gpu'?!!S.parts.gpu.slot:S.ends[id].every(e=>e.sock);
+const all=()=>TK.every(([i])=>done(i));
+const LB=()=>S.mode=='free'||(S.mode=='ident'&&S.lvl==1);
+const fmt=s=>(s/60|0)+':'+String(s%60|0).padStart(2,'0');
+const secs=()=>((S.tEnd||Date.now())-S.t0)/1000|0;
+const score=()=>{let s=0;TK.forEach(([id])=>{if(done(id))s+=['cpu','ram1','ram2','gpu'].includes(id)?CFG.partPts:CFG.cablePts});if(all())s+=CFG.bonus;return Math.max(0,Math.min(CFG.max,s-S.err*CFG.errPen-S.hints*CFG.hintPen))};
+function sk(id){let q=SK[id];if(id=='gpu6'){const g=S.parts.gpu;q={k:'gpu6',x:g.x+156,y:g.y+2}}const d=DIMC[KC[q.k]];return{id,...q,w:d[0],h:d[1],cx:q.x+d[0]/2,cy:q.y+d[1]/2}}
+const sockIds=()=>Object.keys(SK).filter(i=>i!='gpu6'||S.parts.gpu.slot);
+
+function rules(mode,h){if(mode=='eval'&&!$('#nm').value.trim()){$('#nm').focus();$('#nm').setAttribute('aria-invalid','true');$('#nm').placeholder='Informe o nome do aluno para iniciar';return}const lv=mode=='ident'?+$('#lvl').value:h?2:1;pend={mode,lvl:lv,name:$('#nm').value.trim()};
+ $('#rt').textContent=RULES[mode][0]+(mode=='ident'?' — Nível '+lv:mode=='free'?(lv==2?' — Difícil':' — Fácil'):'');$('#rp').textContent=RULES[mode][1]+(mode=='free'&&lv==2?' No Difícil, os nomes dos conectores ficam ocultos: reconheça-os pelo formato e pela posição.':'');$('#rl').classList.add('on');}
+$('#go').onclick=()=>{$('#rl').classList.remove('on');start(pend.mode,pend.lvl,pend.name)};
+function put(id,slot){const o=S.parts[id],q=SL[slot],p=PARTS[id];o.slot=slot;o.x=q.x+(q.w-p.w)/2;o.y=q.y+(q.h-p.h)/2}
+function start(mode,lvl,name){if(mode=='quiz')return quizStart();homeB(true);if(S)clearInterval(S.tm);
+ S={mode,lvl,name,parts:{},ends:{},err:0,hints:0,hc:{},bad:{},errLog:[],errBy:{},t0:Date.now(),tEnd:null,drag:null,hl:[],over:false,lock:{}};
+ for(const k in PARTS){const[x,y]=PARTS[k].home;S.parts[k]={slot:null,x,y}}
+ Object.keys(CAB).forEach((c,i)=>S.ends[c]=[0,1].map(j=>({sock:null,x:706+i*38,y:318+j*30})));
+ S.pin={};[['atx','psu_atx'],['cpu4','psu_cpu'],['pcie6','psu_pcie'],['spwr','psu_sata']].forEach(([c,s])=>{const q=sk(s),e=S.ends[c][0];e.sock=s;e.x=q.cx;e.y=q.cy;S.pin[c]=1});
+ if(mode=='ident')[['cpu','cpu'],['ram1','ramA'],['ram2','ramB'],['gpu','pcie']].forEach(([p,s])=>{put(p,s);S.lock[p]=1});
+ $('#menu').hidden=true;$('#game').hidden=false;$('#end').classList.remove('on');setView(G3?(view==2?2:3):2);
+ $('#mode').textContent=RULES[mode][0]+(mode=='ident'?' — Nível '+lvl:mode=='free'?(lvl==2?' — Difícil':' — Fácil'):'');
+ $('#bt-fin').hidden=mode!='eval';$('#s-t').hidden=$('#s-e').hidden=mode=='free';$('#s-s').hidden=mode!='eval';
+ $('#bt-hint').disabled=!CFG.hintMax[hmode()];
+ S.tm=setInterval(stat,500);
+ setMsg(mode=='eval'?'Avaliação em andamento. Instale as peças e conecte os cabos.':mode=='ident'?'Arraste as duas pontas de cada cabo até os conectores corretos.':'Arraste uma peça da bancada até o encaixe correspondente. Clique nas peças para ver a função.');
+ R()}
+const hmode=()=>S.mode=='ident'?'i'+S.lvl:S.mode;
+function restart(){start(S.mode,S.lvl,S.name)}
+function toMenu(){if(S)clearInterval(S.tm);$('#game').hidden=true;$('#quiz').hidden=true;$('#menu').hidden=false;hpanel();homeB(true);$('#end').classList.remove('on')}
+function setMsg(t,k){const f=$('#fb');f.className='box '+(k||'');f.textContent=t}
+function stat(){if(!S)return;$('#tm').textContent=fmt(secs());$('#er').textContent=S.err;$('#sc').textContent=score()}
+function err(msg,task){S.err++;S.errLog.push(msg);S.errBy[task]=(S.errBy[task]||0)+1;S.bad[task]=1;setMsg(hard()?'Conexão incorreta. Observe o formato e a posição do conector.':msg,'err')}
+function after(task,msg){delete S.bad[task];setMsg(msg,'ok');if(all()&&!S.over){if(S.mode=='free')setMsg('Parabéns! Você concluiu a montagem do computador.','ok');setTimeout(()=>{if(!S.over)finish()},700)}}
+
+function hint(){const mx=CFG.hintMax[hmode()];if(!mx){setMsg('Este nível não tem dicas.');return}
+ const t=TK.find(([id])=>!done(id));if(!t){setMsg('Tudo pronto!','ok');return}
+ const id=t[0],n=Math.min((S.hc[id]||0)+1,mx);S.hc[id]=n;S.hints++;
+ setMsg('Dica '+n+' de '+mx+': '+H[id][n-1]+(S.mode=='eval'?' (−'+CFG.hintPen+' pontos)':''));
+ if(n==3){S.hl=HT[id];setTimeout(()=>{S.hl=[];R()},4000)}R();stat()}
+function check(){const p=TK.filter(([i])=>!done(i));
+ if(!p.length)return setMsg('Nenhuma etapa pendente.','ok');
+ setMsg(S.mode=='eval'?'Faltam '+p.length+' etapa(s).':'Pendentes: '+p.map(([i,n],k)=>maskName(i,n)).join('; ')+'.')}
+const maskName=(i,n)=>(!LB()&&S.mode=='ident'&&CAB[i])?'Cabo '+'ABCDE'[Object.keys(CAB).indexOf(i)]:n;
+
+/* ---------- desenho ---------- */
+function dots(c,col){const[w,h,r,k]=DIMC[c];let s='';for(let a=0;a<r;a++)for(let b=0;b<k;b++)s+=`<circle cx="${-w/2+(b+.5)*w/k}" cy="${-h/2+(a+.5)*h/r}" r="1.2" fill="${col}"/>`;return s}
+function partSVG(id){const p=PARTS[id],o=S.parts[id];let b='';
+ if(id=='cpu')b=`<rect width="66" height="66" rx="6" fill="#bfb8d6"/><rect x="10" y="10" width="46" height="46" rx="3" fill="#8c84ad"/><path d="M0 0H16L0 16Z" fill="#35e08e"/><text x="33" y="38" text-anchor="middle" style="fill:#1b1530;font-weight:600">CPU</text>`;
+ else if(p.k=='ram'){b=`<rect width="16" height="146" rx="2" fill="#1c7b52"/>`;for(let i=0;i<4;i++)b+=`<rect x="3" y="${12+i*28}" width="10" height="18" fill="#111"/>`;b+=`<rect y="138" width="16" height="8" fill="#e6c15a"/>`}
+ else b=`<rect width="190" height="34" rx="4" fill="#2a2142" stroke="#9a6bff"/><circle cx="40" cy="19" r="12" fill="#14101f" stroke="#9a6bff"/><circle cx="95" cy="19" r="12" fill="#14101f" stroke="#9a6bff"/><rect x="156" y="2" width="22" height="14" rx="2" fill="#0a0812" stroke="#6b5ba8"/>`;
+ const nm=o.slot?'':`<text x="0" y="${p.h+13}">${p.n}</text>`;
+ return`<g data-t="p" data-id="${id}" transform="translate(${o.x} ${o.y})"${S.lock[id]?' style="cursor:default"':''}>${b}${nm}</g>`}
+function R(){const lb=LB(),hl=i=>S.hl.includes(i)?'hl':'';let h='';
+ h+=`<rect x="10" y="30" width="236" height="500" rx="12" fill="#16121f" stroke="#2e2744"/><text x="22" y="50" style="font-size:12px">Componentes</text><text x="22" y="460">Arraste cada peça até o encaixe.</text><text x="22" y="474">Arraste as pontas dos cabos até os conectores.</text>`;
+ h+=`<rect x="260" y="30" width="380" height="500" rx="10" fill="#0f3a2e" stroke="#35e08e66" stroke-width="2"/><path d="M335 150V300H430M520 80V320M600 330V400" stroke="#35e08e22" fill="none" stroke-width="3"/><text x="272" y="520">Placa-mãe ATX</text>`;
+ for(const s in SL){const q=SL[s];h+=`<rect class="${hl(s)}" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" rx="3" fill="#07120e" stroke="#35e08e99" stroke-dasharray="4 3"/>`;
+  if(lb&&!hard()&&s!='ramB')h+=`<text x="${q.x}" y="${q.y-4}">${s=='cpu'?'Soquete CPU':s=='pcie'?'PCIe x16':'Slots de RAM'}</text>`}
+ h+=`<rect x="680" y="30" width="210" height="260" rx="10" fill="#1d1830" stroke="#9a6bff88"/><text x="692" y="278" style="font-size:12px">Fonte ATX</text><circle cx="820" cy="190" r="48" fill="#14101f" stroke="#9a6bff55"/><text x="692" y="312">Cabos soltos</text>`;
+ h+=`<rect x="680" y="380" width="210" height="130" rx="8" fill="#221d34" stroke="#6b5ba8"/><circle cx="835" cy="450" r="40" fill="#2c2745" stroke="#6b5ba8"/><circle cx="835" cy="450" r="8" fill="#6b5ba8"/><text x="692" y="500" style="font-size:12px">HD SATA</text>`;
+ const dr=S.drag&&S.drag.mv?S.drag:null,isD=(t,id,j)=>dr&&dr.t==t&&dr.id==id&&(t=='p'||dr.j==j);
+ for(const id in PARTS)if(!S.parts[id].slot&&!isD('p',id))h+=partSVG(id);
+ for(const id in PARTS)if(S.parts[id].slot&&!isD('p',id))h+=partSVG(id);
+ for(const id of sockIds()){const q=sk(id),c=KC[q.k];h+=`<rect class="${hl(id)}" x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" rx="2" fill="#0a0812" stroke="#8a78c8" stroke-dasharray="3 2"/>`;
+  if(lb&&!hard()){const L=q.k=='mb_atx'||q.k=='mb_sata';h+=q.k=='gpu6'?`<text x="${q.x}" y="${q.y-3}">PCIe 6 pinos</text>`:`<text x="${L?q.x-4:q.x+q.w+6}" y="${q.y+q.h-2}" ${L?'text-anchor="end"':''}>${KN[q.k]}</text>`}}
+ const neutral='#9a9ab0';
+ for(const c in CAB){const[a,b]=S.ends[c],col=lb?CAB[c].c:neutral;
+  h+=`<path d="M${a.x} ${a.y}C${a.x-60} ${a.y} ${b.x+60} ${b.y} ${b.x} ${b.y}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="8" stroke-linecap="round"/><path d="M${a.x} ${a.y}C${a.x-60} ${a.y} ${b.x+60} ${b.y} ${b.x} ${b.y}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round"/>`}
+ for(const c in CAB)for(const j of[0,1]){if(isD('e',c,j))continue;h+=endSVG(c,j,lb)}
+ if(dr)h+=dr.t=='p'?partSVG(dr.id):endSVG(dr.id,dr.j,lb);
+ if(view==3&&G3)G3.sync();else sv.innerHTML=h;
+ const n=TK.filter(([i])=>done(i)).length;$('#pct').textContent=Math.round(n/TK.length*100)+'%';$('#pb i').style.width=n/TK.length*100+'%';
+ $('#tl').innerHTML=TK.map(([i,t])=>`<div class="t ${done(i)?'done':S.bad[i]?'bad':''}"><span class="d"></span><span>${maskName(i,t)}</span></div>`).join('');
+ stat()}
+function endSVG(c,j,lb){const e=S.ends[c][j],[w,h]=DIMC[c],col=lb?CAB[c].c:'#9a9ab0';
+ return`<g data-t="e" data-id="${c}" data-j="${j}" transform="translate(${e.x} ${e.y})"><rect x="${-w/2-4}" y="${-h/2-4}" width="${w+8}" height="${h+8}" fill="transparent"/><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="2" fill="${col}" stroke="#000"/>${dots(c,'#0008')}${lb&&!e.sock&&j==0?`<text y="${-h/2-5}" text-anchor="middle">${CAB[c].s}</text>`:''}</g>`}
+
+/* ---------- arrastar e soltar ---------- */
+function pt(e){const r=sv.getBoundingClientRect();return{x:(e.clientX-r.left)*900/r.width,y:(e.clientY-r.top)*560/r.height}}
+sv.addEventListener('pointerdown',e=>{if(!S||S.over)return;const g=e.target.closest('[data-t]');if(!g)return;
+ const t=g.dataset.t,id=g.dataset.id,j=+g.dataset.j||0;
+ if(t=='p'&&S.lock[id]){info(t,id);return}
+ if(t=='e'&&S.pin[id]&&j==0){setMsg('Esta ponta já está presa à fonte. Conecte a outra extremidade do cabo.');return}const o=t=='p'?S.parts[id]:S.ends[id][j],p=pt(e);
+ S.drag={t,id,j,o,dx:o.x-p.x,dy:o.y-p.y,prev:{...o},mv:false,sx:p.x,sy:p.y};sv.setPointerCapture(e.pointerId);e.preventDefault()});
+sv.addEventListener('pointermove',e=>{const d=S&&S.drag;if(!d)return;const p=pt(e);
+ if(!d.mv){if(Math.hypot(p.x-d.sx,p.y-d.sy)<4)return;d.mv=true;
+  if(d.t=='p'){if(d.o.slot=='pcie')S.ends.pcie6.forEach(x=>{if(x.sock=='gpu6')x.sock=null});d.o.slot=null}else d.o.sock=null}
+ const w=d.t=='p'?PARTS[d.id].w:0,h=d.t=='p'?PARTS[d.id].h:0,m=d.t=='p'?0:10;
+ d.o.x=Math.max(m,Math.min(900-w-m,p.x+d.dx));d.o.y=Math.max(m,Math.min(560-h-m,p.y+d.dy));R()});
+sv.addEventListener('pointerup',()=>{const d=S&&S.drag;if(!d)return;S.drag=null;
+ if(!d.mv){info(d.t,d.id);return}
+ d.t=='p'?dropPart(d):dropEnd(d);R()});
+function info(t,id){if(S.mode=='eval')return;
+ if(t=='p')setMsg(PARTS[id].n+': '+PARTS[id].fn);else if(LB())setMsg(CAB[id].n+': '+CAB[id].fn)}
+function partTask(id){const k=PARTS[id].k;return k=='cpu'?'cpu':k=='gpu'?'gpu':rams()<1?'ram1':'ram2'}
+function dropPart(d){const id=d.id,o=d.o,p=PARTS[id],cx=o.x+p.w/2,cy=o.y+p.h/2;let best=null,bd=1e9;
+ for(const s in SL){const q=SL[s];if(cx>q.x-30&&cx<q.x+q.w+30&&cy>q.y-30&&cy<q.y+q.h+30){const dd=Math.hypot(cx-q.x-q.w/2,cy-q.y-q.h/2);if(dd<bd){bd=dd;best=s}}}
+ const back=()=>{o.slot=d.prev.slot;o.x=d.prev.x;o.y=d.prev.y};
+ if(!best){if(d.prev.slot)setMsg(p.n+' removido da placa-mãe.');else if(cx>255&&cx<645)setMsg('Solte a peça exatamente sobre um encaixe da placa-mãe.');return}
+ const q=SL[best],task=partTask(id);
+ if(q.k!=p.k){err(p.n+' não encaixa em '+q.n+'. '+p.err,task);back();return}
+ if(Object.values(S.parts).some(x=>x.slot==best)){err('Este encaixe já está ocupado.',task);back();return}
+ put(id,best);after(task,p.ok)}
+function dropEnd(d){const c=d.id,j=d.j,o=d.o;let best=null,bd=26;
+ for(const id of sockIds()){const q=sk(id),dd=Math.hypot(o.x-q.cx,o.y-q.cy);if(dd<bd){bd=dd;best=id}}
+ if(!best)return;const q=sk(best),oth=S.ends[c][1-j];
+ const back=()=>{o.sock=d.prev.sock;o.x=d.prev.x;o.y=d.prev.y};
+ if(KC[q.k]!=c){err('Não encaixa: '+CAB[c].err,c);back();return}
+ if(Object.values(S.ends).flat().some(e=>e.sock==best)){err('Esse conector já está em uso por outro cabo.',c);back();return}
+ if(oth.sock&&SIDE[sk(oth.sock).k]==SIDE[q.k]){err('As duas pontas não podem ir ao mesmo lado: uma liga na fonte (ou na placa-mãe) e a outra no componente.',c);back();return}
+ o.sock=best;o.x=q.cx;o.y=q.cy;
+ after(c,oth.sock?CAB[c].ok:'Ponta conectada. Falta ligar a outra extremidade do cabo.')}
+
+/* ---------- finalização ---------- */
+function finish(){if(S.over)return;S.over=true;S.tEnd=Date.now();clearInterval(S.tm);stat();
+ const ok=all();if(S.mode=='eval'&&ok&&!S.saved)hsave();const dn=TK.filter(([i])=>done(i)),pd=TK.filter(([i])=>!done(i)),pc=Math.round(dn.length/TK.length*100);
+ const ttl=S.mode=='free'?'Parabéns! Você montou seu computador.':S.mode=='ident'?'Excelente! Você identificou e conectou todos os cabos.':'Avaliação concluída! Confira seu resultado.';
+ const kv=(a,b)=>`<div><b>${b}</b><span>${a}</span></div>`,li=a=>'<ul>'+(a.length?a.map(x=>`<li>${x}</li>`).join(''):'<li>—</li>')+'</ul>';
+ const parts=dn.filter(([i])=>!CAB[i]).map(x=>x[1]),cabs=dn.filter(([i])=>CAB[i]).map(x=>x[1]);
+ let h=`<h2>${ok?ttl:'Montagem incompleta'}</h2>`;
+ if(!ok)h+=`<p style="color:var(--m)">Há etapas pendentes, por isso a conclusão não foi registrada como bem-sucedida.</p>`;
+ if(S.mode=='eval'){const sc=score(),b=CFG.bands.find(x=>sc>=x[0])[1];
+  h+=(S.name?`<p>Aluno: <b>${S.name.replace(/</g,'&lt;')}</b></p>`:'')+`<div class="kv">${kv('Pontuação',sc+' / '+CFG.max)}${kv('Classificação',b)}${kv('Conclusão',pc+'%')}${kv('Tempo',fmt(secs()))}${kv('Erros',S.err)}${kv('Dicas usadas',S.hints)}</div><b>Componentes instalados</b>${li(parts)}<b>Cabos conectados</b>${li(cabs)}`+(pd.length?`<b>Pendentes</b>${li(pd.map(x=>x[1]))}`:'')+`<div id="rev" hidden><b>Erros cometidos</b><ol>${S.errLog.map(x=>`<li>${x}</li>`).join('')||'<li>Nenhum erro.</li>'}</ol></div>`}
+ else if(S.mode=='ident'){const cb=Object.keys(CAB);
+  h+=`<div class="kv">${kv('Cabos corretos',cb.filter(c=>done(c)&&!S.errBy[c]).length+' de 5')}${kv('Erros',S.err)}${kv('Tempo',fmt(secs()))}${kv('Dicas',S.hints)}</div><b>Resumo dos cabos</b>`+li(cb.map(c=>done(c)&&!S.errBy[c]?'✔ '+CAB[c].n:'⚠ '+CAB[c].n+' — revisar ('+(done(c)?S.errBy[c]+' erro(s)':'pendente')+')'))}
+ else h+=`<div class="kv">${kv('Etapas',dn.length+' de '+TK.length)}${kv('Tempo',fmt(secs()))}</div><b>Montado</b>${li(dn.map(x=>x[1]))}`+(pd.length?`<b>Pendentes</b>${li(pd.map(x=>x[1]))}`:'');
+ h+=`<div class="row"><button class="pri" onclick="restart()">Reiniciar</button>${S.mode=='eval'?`<button onclick="$('#rev').hidden=!$('#rev').hidden">Revisar erros</button>`:''}<button onclick="$('#end').classList.remove('on')">Ver bancada</button><button onclick="toMenu()">Menu inicial</button></div>`;
+ $('#ed').innerHTML=h;$('#end').classList.add('on')}
+const hard=()=>S&&S.mode=='free'&&S.lvl==2;
+/* ---------- Identifique os Componentes ---------- */
+const CFGQ={pt:10,pen:2};let Q=null;
+const nz=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const QB=[
+['Peça','Placa-mãe',[250,20,400,520],['placa mae atx','motherboard','mainboard'],'Interliga e alimenta os demais componentes do computador.'],
+['Peça','Processador (CPU)',[290,70,90,90],['processador','cpu','processador cpu'],'Executa as instruções dos programas.'],
+['Peça','Memória RAM',[420,60,70,170],['memoria ram','ram','memoria','pente de memoria'],'Guarda temporariamente os dados em uso.'],
+['Peça','Placa de vídeo (GPU)',[280,305,230,60],['placa de video','gpu','placa grafica'],'Processa e envia a imagem ao monitor.'],
+['Peça','Fonte de alimentação ATX',[670,20,230,280],['fonte','fonte de alimentacao','fonte atx','psu'],'Converte a energia da tomada e alimenta os componentes.'],
+['Peça','HD SATA',[670,370,230,150],['hd','disco rigido','hdd'],'Armazena os dados de forma permanente.'],
+['Cabo','Cabo ATX de 24 pinos','c:atx',['atx de 24 pinos','atx 24 pinos','cabo atx','cabo de 24 pinos'],'Leva a alimentação principal da fonte à placa-mãe.'],
+['Cabo','Cabo de alimentação da CPU de 4 pinos','c:cpu4',['cabo cpu de 4 pinos','cabo cpu 4 pinos','cpu de 4 pinos','cabo de cpu','cabo de 4 pinos','cabo eps de 4 pinos'],'Alimenta o processador com energia dedicada.'],
+['Cabo','Cabo PCIe de 6 pinos','c:pcie6',['pcie de 6 pinos','pcie 6 pinos','cabo pcie','cabo pci express de 6 pinos'],'Leva energia auxiliar da fonte à placa de vídeo.'],
+['Cabo','Cabo SATA de dados','c:sdata',['sata de dados','cabo sata dados','sata dados'],'Faz a comunicação entre o HD e a placa-mãe.'],
+['Cabo','Cabo SATA de alimentação','c:spwr',['sata de alimentacao','cabo sata alimentacao','sata alimentacao','sata power'],'Leva energia da fonte ao HD.'],
+['Conexão','Soquete do processador','r:300,80,70,70',['soquete da cpu','soquete','socket','socket da cpu','socket do processador'],'Local onde o processador é encaixado na placa-mãe.'],
+['Conexão','Slots de memória RAM','r:430,70,46,150',['slot de memoria ram','slot de memoria','slot ram','slots de ram','slot de ram','slot dimm','dimm'],'Locais onde os pentes de memória são encaixados.'],
+['Conexão','Slot PCI Express x16','r:290,330,190,20',['slot pcie x16','pci express x16','pcie x16','slot pci express','slot pcie'],'Recebe a placa de vídeo.'],
+['Conexão','Conector principal ATX de 24 pinos','r:588,150,48,14',['conector atx de 24 pinos','conector atx','conector principal','conector de 24 pinos','conector atx 24 pinos'],'Recebe a alimentação principal da fonte.'],
+['Conexão','Conector de alimentação da CPU de 4 pinos','r:300,52,16,14',['conector cpu de 4 pinos','conector de alimentacao da cpu','conector da cpu','conector de 4 pinos','conector cpu 4 pinos','conector eps'],'Recebe a energia dedicada do processador.'],
+['Conexão','Conector de alimentação PCIe de 6 pinos','r:446,325,22,14',['conector pcie de 6 pinos','conector pcie 6 pinos','conector pcie','conector de 6 pinos','entrada pcie de 6 pinos','conector de alimentacao pcie'],'Entrada de energia auxiliar da placa de vídeo.'],
+['Conexão','Porta SATA de dados da placa-mãe','r:598,400,26,57',['porta sata','porta sata de dados','portas sata','conector sata de dados','porta sata da placa mae','conector sata'],'Recebe o cabo SATA de dados vindo do HD.'],
+['Conexão','Conector SATA de dados do HD','r:688,410,26,9',['porta sata de dados do hd','conector de dados do hd','porta de dados do hd','conector sata de dados','porta sata de dados'],'Recebe o cabo SATA de dados no HD.'],
+['Conexão','Conector SATA de alimentação do HD','r:688,446,38,9',['conector de alimentacao do hd','entrada de alimentacao do hd','conector sata de alimentacao','entrada sata de alimentacao','conector de energia do hd'],'Recebe a energia do cabo SATA de alimentação no HD.'],
+['Conexão','Saída SATA de alimentação da fonte','r:688,172,38,9',['conector sata de alimentacao da fonte','saida sata da fonte','saida sata de alimentacao','saida sata','conector sata de alimentacao'],'De onde parte a energia dos cabos SATA de alimentação.']];
+function scene(){let h='<rect x="260" y="30" width="380" height="500" rx="10" fill="#0f3a2e" stroke="#35e08e66" stroke-width="2"/>';
+ for(const s in SL){const q=SL[s];h+=`<rect x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" rx="3" fill="#07120e" stroke="#35e08e99" stroke-dasharray="4 3"/>`}
+ h+='<rect x="302" y="82" width="66" height="66" rx="6" fill="#bfb8d6"/><rect x="312" y="92" width="46" height="46" fill="#8c84ad"/><rect x="431" y="72" width="16" height="146" fill="#1c7b52"/><rect x="459" y="72" width="16" height="146" fill="#1c7b52"/><rect x="290" y="323" width="190" height="34" rx="4" fill="#2a2142" stroke="#9a6bff"/><circle cx="330" cy="342" r="12" fill="#14101f" stroke="#9a6bff"/><circle cx="385" cy="342" r="12" fill="#14101f" stroke="#9a6bff"/><rect x="680" y="30" width="210" height="260" rx="10" fill="#1d1830" stroke="#9a6bff88"/><circle cx="820" cy="190" r="48" fill="#14101f" stroke="#9a6bff55"/><rect x="680" y="380" width="210" height="130" rx="8" fill="#221d34" stroke="#6b5ba8"/><circle cx="835" cy="450" r="40" fill="#2c2745" stroke="#6b5ba8"/>';
+ for(const id in SK){const q=SK[id],x=id=='gpu6'?446:q.x,y=id=='gpu6'?325:q.y,d=DIMC[KC[q.k]];h+=`<rect x="${x}" y="${y}" width="${d[0]}" height="${d[1]}" rx="2" fill="#0a0812" stroke="#8a78c8" stroke-dasharray="3 2"/>`}
+ return h}
+function vb(v){if(Array.isArray(v))return v.join(' ');if(v[0]=='c')return'0 0 400 260';const[x,y,w,h]=v.slice(2).split(',').map(Number);let bw=Math.max(140,w+80),bh=bw/1.54;if(h+50>bh){bh=h+50;bw=bh*1.54}return[x+w/2-bw/2,y+h/2-bh/2,bw,bh].join(' ')}
+function qsvg(v){if(Array.isArray(v))return scene();
+ if(v[0]=='r'){const[x,y,w,h]=v.slice(2).split(',').map(Number);return scene()+`<rect class="hl" x="${x-5}" y="${y-5}" width="${w+10}" height="${h+10}" rx="4" fill="none" stroke="#35e08e" stroke-width="3"/>`}
+ const c=v.slice(2),[w,h]=DIMC[c],e=x=>`<g transform="translate(${x} 130) scale(2.4)"><rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="2" fill="#9a9ab0" stroke="#000"/>${dots(c,'#0008')}</g>`;
+ return`<path d="M70 130C130 40 270 220 330 130" fill="none" stroke="#9a9ab0" stroke-width="7" stroke-linecap="round"/>`+e(70)+e(330)}
+function quizStart(){homeB(true);if(S)clearInterval(S.tm);$('#menu').hidden=true;$('#game').hidden=true;$('#end').classList.remove('on');$('#quiz').hidden=false;
+ const o=QB.map((_,i)=>i);for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}
+ Q={o,i:0,ok:0,bad:[],t0:Date.now(),ans:false};qShow()}
+function qHead(){$('#qp').textContent=(Q.i+1)+' / '+QB.length+' · Acertos '+Q.ok+' · Erros '+Q.bad.length}
+function qShow(){const it=QB[Q.o[Q.i]];Q.ans=false;qHead();
+ $('#qq').textContent={'Peça':'Qual é o nome do componente apresentado?','Cabo':'Qual é o nome do cabo apresentado?','Conexão':'Qual é o nome da conexão destacada?'}[it[0]];
+ $('#qs').setAttribute('viewBox',vb(it[2]));$('#qs').innerHTML=qsvg(it[2]);
+ const i=$('#qi');i.value='';i.disabled=false;$('#qb').textContent='Confirmar resposta';$('#qf').textContent='';$('#qf').className='box';i.focus()}
+function qGo(){const it=QB[Q.o[Q.i]];
+ if(Q.ans){Q.i++;if(Q.i>=QB.length)return qEnd();return qShow()}
+ const v=nz($('#qi').value);if(!v){$('#qf').textContent='Digite uma resposta antes de confirmar.';return}
+ Q.ans=true;$('#qi').disabled=true;const ok=[it[1],...it[3]].some(a=>nz(a)==v);
+ if(ok)Q.ok++;else Q.bad.push(it);
+ $('#qf').className='box '+(ok?'ok':'err');$('#qf').textContent=(ok?'Correto! ':'Resposta incorreta. O nome correto é: '+it[1]+'. ')+it[4];
+ $('#qb').textContent=Q.i+1>=QB.length?'Ver relatório':'Próxima';qHead()}
+
+function qEnd(){const n=QB.length,t=((Date.now()-Q.t0)/1000)|0,pct=Math.round(Q.ok/n*100),pts=Math.max(0,Q.ok*CFGQ.pt-Q.bad.length*CFGQ.pen);
+ const kv=(a,b)=>`<div><b>${b}</b><span>${a}</span></div>`,g=c=>{const l=Q.bad.filter(x=>x[0]==c);return l.length?`<b>${c==='Cabo'?'Cabos':c==='Peça'?'Peças':'Conexões'} a revisar</b><ul>${l.map(x=>`<li><b>${x[1]}</b> — ${x[4]}</li>`).join('')}</ul>`:''};
+ const rv=g('Peça')+g('Cabo')+g('Conexão');
+ $('#ed').innerHTML=`<h2>Relatório de identificação</h2><div class="kv">${kv('Percentual de acertos',pct+'%')}${kv('Pontuação',pts)}${kv('Acertos / erros',Q.ok+' / '+Q.bad.length)}${kv('Perguntas respondidas',n)}${kv('Tempo total',fmt(t))}</div>${rv||'<p>Nenhum item para revisar. Parabéns!</p>'}<div class="row"><button class="pri" onclick="quizStart()">Tentar novamente</button><button onclick="toMenu()">Menu inicial</button></div>`;$('#end').classList.add('on')}
+/* ---------- Bancada 3D (Three.js) ---------- */
+let view=0,G3=null;
+function setView(v){if(v!=3&&(BO.x||BO.y)){homeB();if(S)setMsg('A placa-mãe voltou à posição original na versão 2D.')}view=v;$('#bench').hidden=v==3;$('#bench3').hidden=v!=3;$('#bt-v').hidden=!G3;$('#bt-cam').hidden=v!=3;$('#bt-ctr').hidden=v!=3;$('#bt-v').textContent=v==3?'Ver em 2D':'Ver em 3D';if(v==3)G3.resize();if(S)R()}
+const toggleView=()=>setView(view==3?2:3);
+function init3(){try{
+ if(!window.THREE||!THREE.OrbitControls)throw new Error('Three.js não carregou');
+ const T=THREE,host=$('#bench3'),W=x=>(x-450)/20,Z=y=>(y-280)/20;
+ const rd=new T.WebGLRenderer({antialias:true});if(!rd.getContext())throw new Error('WebGL indisponível');
+ rd.shadowMap.enabled=false;const cv=rd.domElement;rd.setPixelRatio(Math.min(window.devicePixelRatio||1,2));host.appendChild(cv);
+ const sc=new T.Scene();sc.background=new T.Color(0x0f0c18);sc.add(new T.HemisphereLight(0xdfe6ff,0x1a1426,.8));const dl=new T.DirectionalLight(0xffffff,.8);dl.position.set(8,25,12);dl.castShadow=false;sc.add(dl);
+ const cam=new T.PerspectiveCamera(42,1/.62,.1,200),HOME=[0,26,22];cam.position.set(...HOME);
+ let ctl,sp=false;const draw=()=>rd.render(sc,cam);
+ const ray=new T.Raycaster(),pl=new T.Plane(new T.Vector3(0,1,0),0),v3=new T.Vector3(),m2=new T.Vector2(),pick=[];
+ const MET=[0xc9c6d8,0xe0b84a,0xe6c15a,0xbfbfc9,0x9a98ad],mats={},mat=c=>mats[c]||(mats[c]=new T.MeshStandardMaterial({color:c,roughness:MET.includes(c)?.3:.6,metalness:MET.includes(c)?.9:.1}));
+ const bx=(w,h,d,c,x=0,y=0,z=0)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=false;return m};
+ const cyl=(r,h,c,x,y,z)=>{const m=new T.Mesh(new T.CylinderGeometry(r,r,h,24),mat(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=false;return m};
+ const pinG=new T.BoxGeometry(.14,.3,.14),hlM=new T.MeshBasicMaterial({color:0x35e08e,transparent:true,opacity:.6});
+ function conn(c,col,own){const[w,h,r,k]=DIMC[c],g=new T.Group(),b=bx(w/20,.35,h/20,col,0,.17,0);if(own)b.material=new T.MeshStandardMaterial({color:col});g.add(b);g.userData.body=b;
+  for(let a=0;a<r;a++)for(let i=0;i<k;i++){const p=new T.Mesh(pinG,mat(0xe0b84a));p.position.set((-w/2+(i+.5)*w/k)/20,.4,(-h/2+(a+.5)*h/r)/20);g.add(p)}g.add(bx(w/20*.4,.2,.14,col,0,.45,-h/40-.05));return g}
+ function lbl(t,s){const c=document.createElement('canvas');c.width=256;c.height=48;const x=c.getContext('2d');x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,0,256,48);x.fillStyle='#fff';x.font='bold 24px sans-serif';x.textAlign='center';x.fillText(t,128,32);
+  const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false,transparent:true}));sp.scale.set(4.8*s,.9*s,1);sp.renderOrder=9;sp.raycast=()=>{};return sp}
+ const hlb=(w,d)=>{const m=new T.Mesh(new T.BoxGeometry(w+.6,.1,d+.6),hlM);m.position.y=.05;m.visible=false;return m};
+ const CR={atx:.22,cpu4:.14,pcie6:.16,sdata:.1,spwr:.13};
+ function pcbMesh(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#0f3a2e';x.fillRect(0,0,512,512);x.strokeStyle='#1d6b52';x.lineWidth=2;
+  for(let i=0;i<60;i++){let a=Math.random()*512,b=Math.random()*512;x.beginPath();x.moveTo(a,b);for(let k=0;k<4;k++){if(k%2)a+=(Math.random()-.5)*160;else b+=(Math.random()-.5)*160;x.lineTo(a,b)}x.stroke()}
+  x.fillStyle='#c9a64a';for(let i=0;i<80;i++){x.beginPath();x.arc(Math.random()*512,Math.random()*512,2.2,0,6.3);x.fill()}
+  const m=new T.Mesh(new T.BoxGeometry(19,.4,25),new T.MeshStandardMaterial({map:new T.CanvasTexture(c),roughness:.45,metalness:.15}));m.position.y=.2;m.receiveShadow=m.castShadow=false;return m}
+ /* cenário estático */
+ sc.add(bx(45,.1,28,0x1a1626,0,-.05,0),bx(11.8,.15,25,0x16121f,W(128),.07,Z(280)),pcbMesh(),bx(10.5,2,13,0x1d1830,W(785),1,Z(160)),bx(10.5,1.2,6.5,0x9a98ad,W(785),.6,Z(445)));
+ sc.add(cyl(2.2,.1,0x14101f,W(820),2.05,Z(190)),cyl(2,.1,0x2c2745,W(835),1.25,Z(450)));
+ [['Fonte ATX',785,60,3],['HD SATA',785,395,2],['Placa-mãe ATX',450,40,3]].forEach(([t,x,y,h])=>{const s=lbl(t,1);s.position.set(W(x),h,Z(y));sc.add(s)});
+ const SLH={},SLL=[],SLG={};
+ for(const s in SL){const q=SL[s],g=new T.Group();g.add(bx(q.w/20,.15,q.h/20,0x07120e,0,.47,0));const hb=hlb(q.w/20,q.h/20);hb.position.y=.4;g.add(hb);SLH[s]=hb;g.position.set(W(q.x+q.w/2),0,Z(q.y+q.h/2));sc.add(g);SLG[s]=g;
+  if(s!='ramB'){const l=lbl(s=='cpu'?'Soquete CPU':s=='pcie'?'PCIe x16':'Slots de RAM',.8);l.position.set(0,1.2,0);g.add(l);SLL.push(l)}}
+ /* peças */
+ const PG={},PY={cpu:[.2,.6],ram:[.2,.6],gpu:[.5,1]};
+ for(const id in PARTS){const p=PARTS[id],g=new T.Group();
+  if(id=='cpu'){g.add(bx(3.3,.25,3.3,0x2f8f6b),bx(2.3,.2,2.3,0xc9c6d8,0,.22,0),bx(.5,.05,.5,0x35e08e,-1.3,.14,-1.3))}
+  else if(p.k=='ram'){g.add(bx(.8,.25,7.3,0x1c7b52),bx(.7,.26,.4,0xe6c15a,0,0,3.4));for(let i=0;i<4;i++)g.add(bx(.5,.18,1,0x111111,0,.2,-2.6+i*1.6))}
+  else{g.add(bx(9.5,.8,1.7,0x2a2142),bx(7,.2,1.5,0x3b2f5c,-1,.5,0),cyl(.6,.12,0x14101f,-2.8,.62,0),cyl(.6,.12,0x14101f,-.8,.62,0),bx(.1,1.4,1.7,0xbfbfc9,-4.8,.2,0),bx(5,.05,.2,0xe6c15a,-1.5,-.4,.85))}
+  const l=lbl(p.n,.9);l.position.set(0,1.6,0);g.add(l);g.userData={t:'p',id,lbl:l};PG[id]=g;sc.add(g);pick.push(g)}
+ /* conectores (soquetes) */
+ const SG={};
+ for(const id in SK){const q=SK[id],c=KC[q.k],d=DIMC[c],g=conn(c,0x15101f),hb=hlb(d[0]/20,d[1]/20),l=lbl(KN[q.k],.8);g.add(hb);l.position.y=1.1;g.add(l);g.userData={lbl:l,hl:hb};SG[id]=g;
+  if(id=='gpu6'){PG.gpu.add(g);g.position.set(3.6,.4,-.4)}else{sc.add(g);g.position.set(W(q.x+d[0]/2),id[0]=='p'?2:id[0]=='h'?1.2:.4,Z(q.y+d[1]/2))}}
+ /* cabos */
+ const EG={},TB={},WR={},WC={atx:[0xff8a1f,0xff8a1f,0x151515,0xd72b2b,0x151515,0xd72b2b,0x151515,0x888888,0x7a3fb5,0xf2c81b,0xf2c81b,0xff8a1f,0x2a62d0,0x151515,0x2fb34a,0x151515,0x151515,0x151515,0xeeeeee,0xd72b2b,0xd72b2b,0xd72b2b,0x151515,0x151515],cpu4:[0xf2c81b,0xf2c81b,0x151515,0x151515],pcie6:[0xf2c81b,0xf2c81b,0xf2c81b,0x151515,0x151515,0x151515],spwr:[0xff8a1f,0x151515,0xd72b2b,0xf2c81b]};
+ const pin=(c,i)=>{const[w,h,r,k]=DIMC[c],n=WC[c].length,col=c=='spwr'?Math.round((i+.5)*k/n-.5):i%k,row=c=='spwr'?0:Math.floor(i/k);return new T.Vector3((-w/2+(col+.5)*w/k)/20,.45,(-h/2+(row+.5)*h/r)/20)};
+ for(const c in CAB){EG[c]=[0,1].map(j=>{const g=conn(c,0x9a9ab0,true),hit=bx(DIMC[c][0]/20+.6,1,DIMC[c][1]/20+.6,0xffffff);hit.visible=false;g.add(hit);
+   const l=lbl(CAB[c].s,.8);l.position.y=1;g.add(l);g.userData.t='e';g.userData.id=c;g.userData.j=j;g.userData.lbl=l;sc.add(g);pick.push(g);return g});
+  TB[c]=new T.Mesh(new T.BufferGeometry(),mat(0x9a9ab0));TB[c].userData.t='x';pick.push(TB[c]);sc.add(TB[c]);
+  WR[c]=(WC[c]||[]).map(col=>{const w=new T.Mesh(new T.BufferGeometry(),mat(col));w.userData.t='x';pick.push(w);sc.add(w);return w})}
+ const top=id=>id=='gpu6'?PG.gpu.position.y+.4:id[0]=='p'?2:id[0]=='h'?1.2:.4;
+ const BM=sc.children.find(c=>c.geometry&&c.geometry.parameters&&c.geometry.parameters.width==19&&c.geometry.parameters.depth==25),BL=sc.children.find(c=>c.isSprite&&c.position.x===0&&c.position.y===3&&Math.abs(c.position.z+12)<.01);BM.userData={t:'b'};pick.push(BM);
+ function sync(){const lb=LB(),hd=hard(),dr=S.drag&&S.drag.mv?S.drag:null;
+  BM.position.x=W(450+BO.x);BM.position.z=Z(280+BO.y);BL.position.x=BM.position.x;BL.position.z=Z(40+BO.y);
+  for(const s in SLG){const q=SL[s];SLG[s].position.x=W(q.x+q.w/2);SLG[s].position.z=Z(q.y+q.h/2)}
+  for(const id in SG)if(id!='gpu6'){const q=SK[id],d=DIMC[KC[q.k]];SG[id].position.x=W(q.x+d[0]/2);SG[id].position.z=Z(q.y+d[1]/2)}
+  for(const id in PARTS){const o=S.parts[id],p=PARTS[id],g=PG[id],dg=dr&&dr.t=='p'&&dr.id==id;
+   g.position.set(W(o.x+p.w/2),PY[p.k][o.slot?1:0]+(dg?1.2:0),Z(o.y+p.h/2));g.userData.lbl.visible=!o.slot}
+  SG.gpu6.visible=!!S.parts.gpu.slot;
+  for(const c in CAB)for(const j of[0,1]){const e=S.ends[c][j],g=EG[c][j],dg=dr&&dr.t=='e'&&dr.id==c&&dr.j==j;
+   g.position.set(W(e.x),(e.sock?top(e.sock)+.3:.3)+(dg?1.2:0),Z(e.y));g.userData.body.material.color.set(lb?CAB[c].c:0x9a9ab0);g.userData.lbl.visible=lb&&!e.sock&&j==0}
+  for(const c in CAB){const[a,b]=EG[c].map(g=>g.position),mid=a.clone().add(b).multiplyScalar(.5);mid.y+=1.4;const m=TB[c];m.geometry.dispose();
+   const dv=b.clone().sub(a),L=dv.length(),nn=dv.clone().normalize(),up=new T.Vector3(0,.9,0),m2b=a.clone().add(b).multiplyScalar(.5);m2b.y+=Math.min(2.6,.5+L*.12);
+   const P=[a.clone(),a.clone().add(up).addScaledVector(nn,.9),m2b,b.clone().add(up).addScaledVector(nn,-.9),b.clone()];
+   if(WR[c].length){m.visible=false;const n=WR[c].length,cc=Math.ceil(Math.sqrt(n*2)),rw=Math.ceil(n/cc),sd=new T.Vector3(-nn.z,0,nn.x).normalize(),s2=.085;
+    WR[c].forEach((w,i)=>{const bo=sd.clone().multiplyScalar(((i%cc)-(cc-1)/2)*s2).add(new T.Vector3(0,(Math.floor(i/cc)-(rw-1)/2)*s2,0)),po=pin(c,i),pts=P.map((p,k)=>p.clone().add(k==0||k==4?po:bo));
+     w.geometry.dispose();w.geometry=new T.TubeGeometry(new T.CatmullRomCurve3(pts,false,'centripetal'),24,.04,5,false)})}
+   else{m.geometry=new T.TubeGeometry(new T.CatmullRomCurve3(P,false,'centripetal'),36,CR[c],8,false);m.material=mat(lb?CAB[c].c:0x9a9ab0)}}
+  for(const id in SG){SG[id].userData.lbl.visible=lb&&!hd;SG[id].userData.hl.visible=S.hl.includes(id)}
+  for(const s in SLH)SLH[s].visible=S.hl.includes(s);SLL.forEach(l=>l.visible=lb&&!hd);draw()}
+ function resize(){const w=host.clientWidth||640;rd.setSize(w,Math.round(w*.62));draw()}
+ function ndc(e){const r=cv.getBoundingClientRect();m2.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(m2,cam)}
+ function plane(e){ndc(e);return ray.ray.intersectPlane(pl,v3)?{x:v3.x*20+450,y:v3.z*20+280}:null}
+ /* interação das peças: registrada antes dos controles da câmera */
+ cv.addEventListener('pointerdown',e=>{if(!S||S.over||sp||e.button!==0)return;ndc(e);const h=ray.intersectObjects(pick,true)[0];if(!h)return;
+  let g=h.object;while(g&&!g.userData.t)g=g.parent;if(!g)return;if(g.userData.t=='x')return;const t=g.userData.t,id=g.userData.id,j=g.userData.j||0;
+  if(t=='p'&&S.lock[id]){info(t,id);return}
+  if(t=='e'&&S.pin[id]&&j==0){setMsg('Esta ponta já está presa à fonte. Conecte a outra extremidade do cabo.');return}const o=t=='b'?BO:t=='p'?S.parts[id]:S.ends[id][j],p=plane(e);if(!p)return;
+  S.drag={t,id,j,o,dx:o.x-p.x,dy:o.y-p.y,prev:{...o},mv:false,sx:p.x,sy:p.y};ctl.enabled=false;cv.setPointerCapture(e.pointerId);e.stopImmediatePropagation()});
+ cv.addEventListener('pointermove',e=>{const d=S&&S.drag;if(!d)return;const p=plane(e);if(!p)return;
+  if(d.t=='b'){if(!d.mv){if(Math.hypot(p.x-d.sx,p.y-d.sy)<4)return;d.mv=true}const nx=Math.max(-260,Math.min(260,p.x+d.dx)),ny=Math.max(-30,Math.min(30,p.y+d.dy));moveBoard(nx-BO.x,ny-BO.y);R();return}
+  if(!d.mv){if(Math.hypot(p.x-d.sx,p.y-d.sy)<4)return;d.mv=true;
+   if(d.t=='p'){if(d.o.slot=='pcie')S.ends.pcie6.forEach(x=>{if(x.sock=='gpu6')x.sock=null});d.o.slot=null}else d.o.sock=null}
+  const w=d.t=='p'?PARTS[d.id].w:0,h=d.t=='p'?PARTS[d.id].h:0,m=d.t=='p'?0:10;
+  d.o.x=Math.max(m,Math.min(900-w-m,p.x+d.dx));d.o.y=Math.max(m,Math.min(560-h-m,p.y+d.dy));R()});
+ cv.addEventListener('pointerup',()=>{ctl.enabled=true;const d=S&&S.drag;if(!d)return;S.drag=null;
+  if(!d.mv){if(d.t!='b')info(d.t,d.id);R();return}if(d.t=='b'){R();return}d.t=='p'?dropPart(d):dropEnd(d);R()});
+ cv.addEventListener('webglcontextlost',e=>{e.preventDefault();console.error('Contexto WebGL perdido');G3=null;setView(2)});
+ ctl=new T.OrbitControls(cam,cv);ctl.enablePan=true;ctl.minDistance=6;ctl.maxDistance=60;ctl.maxPolarAngle=1.45;ctl.addEventListener('change',draw);
+ addEventListener('resize',()=>{if(view==3)resize()});
+ const act=()=>view==3&&!$('#game').hidden,off=()=>{if(sp){sp=false;ctl.mouseButtons.LEFT=T.MOUSE.ROTATE;cv.style.cursor=''}};
+ addEventListener('keydown',e=>{if(e.code!=='Space'||!act()||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;e.preventDefault();if(!sp&&!(S&&S.drag)){sp=true;ctl.mouseButtons.LEFT=T.MOUSE.PAN;cv.style.cursor='move'}});
+ addEventListener('keyup',e=>{if(e.code==='Space'){if(act())e.preventDefault();off()}});addEventListener('blur',off);
+ G3={sync,resize,reset(){cam.position.set(...HOME);ctl.target.set(0,0,0);ctl.update();draw()},center(){const d=cam.position.clone().sub(ctl.target).setLength(38);ctl.target.set(0,0,0);cam.position.copy(d);ctl.update();draw()}};
+}catch(e){console.error('3D indisponível, usando versão 2D:',e);G3=null;$('#menu p').textContent+=' (Modelos 3D indisponíveis neste navegador: usando a versão 2D.)'}}
+init3();
+/* ---------- Identificação: fotos reais e validação em níveis ---------- */
+/* ---------- Placa-mãe móvel: deslocamento BO e conjunto associado ---------- */
+const BO={x:0,y:0};
+function moveBoard(dx,dy,ns){BO.x+=dx;BO.y+=dy;
+ for(const s in SL){SL[s].x+=dx;SL[s].y+=dy}
+ for(const id in SK)if(id[0]=='m'){SK[id].x+=dx;SK[id].y+=dy}
+ if(S&&!ns){for(const k in S.parts){const o=S.parts[k];if(o.slot){o.x+=dx;o.y+=dy}}
+  for(const c in S.ends)S.ends[c].forEach(e=>{if(e.sock&&(e.sock[0]=='m'||e.sock=='gpu6')){e.x+=dx;e.y+=dy}})}}
+const homeB=ns=>moveBoard(-BO.x,-BO.y,ns);
+Object.assign(CFGQ,{ex:10,eqPct:.9,tries:2});
+const QID=['mb','cpu','ram','gpu','psu','hdd','c_atx','c_cpu4','c_pcie6','c_sdata','c_spwr','k_cpu','k_ram','k_pcie','k_atx','k_cpu4','k_gpu6','k_sata_mb','k_sata_hdd','k_hdd_pwr','k_psu_sata'];
+let PH={};try{PH=JSON.parse(localStorage.getItem('pcb_ph')||'{}')}catch(e){}
+const QX={'Processador (CPU)':['processador'],'Placa de vídeo (GPU)':['placa de video'],'Fonte de alimentação ATX':['fonte de alimentacao','fonte atx'],'Placa-mãe':['placa mae atx'],'Soquete do processador':['soquete da cpu'],'Slot PCI Express x16':['slot pcie x16','pci express x16'],'Conector principal ATX de 24 pinos':['conector atx de 24 pinos'],'Conector de alimentação da CPU de 4 pinos':['conector cpu de 4 pinos'],'Conector de alimentação PCIe de 6 pinos':['conector pcie de 6 pinos']};
+const QN={gpu:'GPU é a sigla de Graphics Processing Unit, o processador gráfico. Neste exercício, ela identifica a placa de vídeo.',cpu:'CPU é a sigla de Central Processing Unit.',ram:'RAM é a sigla de Random Access Memory.',hd:'HD é a abreviação de hard disk (disco rígido).',hdd:'HDD é a sigla de hard disk drive.',psu:'PSU é a sigla de Power Supply Unit (fonte de alimentação).'};
+const PS='Você identificou o tipo de conexão, mas precisa especificar se é o cabo de dados ou o cabo de alimentação.',PC='Você identificou o padrão, mas precisa informar se é de dados ou de alimentação e em qual componente fica.';
+const QP={'Cabo SATA de dados':[['sata',PS],['cabo sata',PS],['cabo de dados',PS]],'Cabo SATA de alimentação':[['sata',PS],['cabo sata',PS],['cabo de alimentacao',PS]],
+ 'Cabo ATX de 24 pinos':[['atx','Você acertou o padrão, mas precisa informar a quantidade de pinos.'],['cabo de alimentacao','Você identificou um cabo de alimentação, mas precisa dizer qual (ATX) e quantos pinos.']],
+ 'Cabo de alimentação da CPU de 4 pinos':[['cabo de alimentacao','Você identificou um cabo de alimentação, mas precisa dizer para qual componente e quantos pinos.'],['cabo de energia','Você identificou um cabo de energia, mas precisa dizer para qual componente e quantos pinos.']],
+ 'Cabo PCIe de 6 pinos':[['pcie','Você identificou o padrão, mas precisa especificar o cabo de 6 pinos.'],['pci express','Você identificou o padrão, mas precisa especificar o cabo de 6 pinos.']],
+ 'Placa-mãe':[['placa','“Placa” é genérico demais: qual placa é esta?']],
+ 'Porta SATA de dados da placa-mãe':[['sata',PC],['conector',PC]],'Conector SATA de dados do HD':[['sata',PC],['conector sata',PC]],
+ 'Conector SATA de alimentação do HD':[['sata',PC],['porta sata',PC]],'Saída SATA de alimentação da fonte':[['sata',PC],['saida',PC]]};
+function qJudge(it,v,typed){
+ if(v==nz(it[1])||(QX[it[1]]||[]).some(a=>nz(a)==v))return{lv:'ex'};
+ if(it[3].some(a=>nz(a)==v))return{lv:'eq',note:QN[v]||'“'+typed+'” é uma nomenclatura equivalente.'};
+ const pa=(QP[it[1]]||[]).find(a=>nz(a[0])==v);if(pa)return{lv:'pa',msg:pa[1]};
+ const ot=QB.find(o=>o!==it&&(nz(o[1])==v||o[3].some(a=>nz(a)==v)));
+ if(ot)return{lv:'wr',msg:ot[0]!=it[0]?'Isso é '+ot[0].toLowerCase()+', mas o item apresentado é '+it[0].toLowerCase()+'. Lembre: o cabo é a peça; o conector é o local onde ele se liga.':'Esse nome pertence a outro item. Compare o formato, a quantidade de pinos e a posição.'};
+ return{lv:'wr'}}
+function qFb(cls,title,text){const f=$('#qf'),ic={ex:'★ ',eq:'✓ ',pa:'◐ ',wr:'✗ ',n:''}[cls]||'';f.className='box q-'+cls;f.replaceChildren(Object.assign(document.createElement('b'),{textContent:ic+title}),document.createElement('br'),document.createTextNode(text))}
+function qHead(){const s=Q.s||{ex:0,eq:0,wr:0,pa:0},n=QB.length;$('#qp').textContent=(Q.i+1)+' / '+n+' · Acertos '+(s.ex+s.eq);$('#qpi').style.width=(Q.i+(Q.ans?1:0))/n*100+'%'}
+function qShow(){const it=QB[Q.o[Q.i]],id=QID[QB.indexOf(it)];Q.s=Q.s||{ex:0,eq:0,pa:0,wr:0,rt:0,pts:0,res:0,miss:[]};Q.ans=false;Q.tr=0;Q.first=null;Q.pi=0;qHead();
+ $('#qq').textContent={'Peça':'Qual é o nome do componente apresentado?','Cabo':'Qual é o nome do cabo apresentado?','Conexão':'Qual é o nome da conexão destacada?'}[it[0]];
+ const ph=PH[id]||[],img=$('#qimg'),sv2=$('#qs'),nt=$('#qnote'),tg=$('#qtg');
+ const illus=()=>{img.hidden=true;sv2.hidden=false;sv2.setAttribute('viewBox',vb(it[2]));sv2.innerHTML=qsvg(it[2]);nt.textContent='Fotografia real indisponível para este item: exibindo ilustração.';tg.hidden=true};
+ if(ph.length){sv2.hidden=true;img.hidden=false;img.onerror=illus;img.src=ph[0];nt.textContent='';tg.hidden=ph.length<2;tg.onclick=()=>{Q.pi=1-Q.pi;img.src=ph[Q.pi]}}else illus();
+ const i=$('#qi');i.value='';i.disabled=false;$('#qb').textContent='Confirmar resposta';$('#qf').className='box';$('#qf').textContent='';i.focus()}
+function qGo(){const it=QB[Q.o[Q.i]],s=Q.s;
+ if(Q.ans){Q.i++;if(Q.i>=QB.length)return qEnd();return qShow()}
+ const raw=$('#qi').value.trim(),v=nz(raw);if(!v){qFb('n','Resposta em branco','Digite uma resposta antes de confirmar.');return}
+ const r=qJudge(it,v,raw),good=r.lv=='ex'||r.lv=='eq';Q.tr++;
+ if(Q.first===null){Q.first=r.lv;s[r.lv]++;if(r.lv=='ex')s.pts+=CFGQ.ex;if(r.lv=='eq')s.pts+=CFGQ.ex*CFGQ.eqPct;if(!good)s.miss.push(it)}else s.rt++;
+ const last=good||Q.tr>=CFGQ.tries;if(good)s.res++;
+ const T={ex:['Excelente! Nomenclatura perfeita!','Resposta perfeita! Você identificou corretamente '+it[1]+'.'],eq:['Muito bem! Resposta correta!',r.note+' O nome oficial é '+it[1]+'.'],pa:['Quase lá! Especifique melhor o componente.',r.msg],wr:['Ainda não. Tente novamente.','Resposta incorreta. Observe novamente a imagem e tente identificar o componente.'+(r.msg?' '+r.msg:'')]}[r.lv];
+ let t=T[1];if(good)t+=' '+it[4];else if(last)t+=' O nome correto é: '+it[1]+'. '+it[4];else t+=' (Tentativa '+Q.tr+' de '+CFGQ.tries+')';
+ qFb(r.lv,T[0],t);
+ if(last){Q.ans=true;$('#qi').disabled=true;$('#qb').textContent=Q.i+1>=QB.length?'Ver relatório':'Próxima'}else $('#qi').select();qHead()}
+function qEnd(){const n=QB.length,s=Q.s,t=((Date.now()-Q.t0)/1000)|0,ok=s.ex+s.eq,
+ kv=(a,b)=>`<div><b>${b}</b><span>${a}</span></div>`,g=c=>{const l=s.miss.filter(x=>x[0]==c);return l.length?`<b>${c=='Cabo'?'Cabos':c=='Peça'?'Peças':'Conexões'} a revisar</b><ul>${l.map(x=>`<li><b>${x[1]}</b> — ${x[4]}</li>`).join('')}</ul>`:''};
+ const rv=g('Peça')+g('Cabo')+g('Conexão');
+ $('#ed').innerHTML=`<h2>Relatório de identificação</h2><div class="kv">${kv('Taxa de acerto (1ª resposta)',Math.round(ok/n*100)+'%')}${kv('Precisão da nomenclatura',ok?Math.round(s.ex/ok*100)+'%':'—')}${kv('Respostas exatas',s.ex)}${kv('Respostas equivalentes',s.eq)}${kv('Respostas parciais',s.pa)}${kv('Erros',s.wr)}${kv('Pontuação',Math.round(s.pts*10)/10+' / '+n*CFGQ.ex)}${kv('Tentativas extras',s.rt)}${kv('Tempo total',fmt(t))}</div>${rv||'<p>Nenhum item para revisar. Parabéns!</p>'}<div class="row"><button class="pri" onclick="quizStart()">Tentar novamente</button><button onclick="toMenu()">Menu inicial</button></div>`;$('#end').classList.add('on')}
+/* gerenciador de fotos (salvas só neste navegador) */
+const rz=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.8))};im.onerror=no;im.src=r.result};r.onerror=no;r.readAsDataURL(f)});
+function photoDlg(){$('#ed').innerHTML=`<h2>Fotos do modo de identificação</h2><p style="color:var(--m);font-size:14px">Envie fotografias reais de cada item: até 2 por item (geral e close-up). Elas ficam salvas somente neste navegador. Confira se cada foto corresponde ao item indicado.</p><div style="max-height:50vh;overflow:auto">`+QB.map((it,i)=>`<label style="display:flex;gap:8px;align-items:center;justify-content:space-between;padding:4px 0;font-size:13px"><span>${it[0]}: ${it[1]} <b id="ph${i}" style="color:var(--g)">${(PH[QID[i]]||[]).length?'✓ '+PH[QID[i]].length+' foto(s)':''}</b></span><input type="file" accept="image/*" multiple data-i="${i}" style="max-width:190px"></label>`).join('')+`</div><div class="row"><button id="phx">Remover todas</button><button class="pri" id="phc">Fechar</button></div>`;
+ $('#phx').onclick=()=>{if(confirm('Remover todas as fotos?')){PH={};try{localStorage.removeItem('pcb_ph')}catch(e){}photoDlg()}};$('#phc').onclick=()=>$('#end').classList.remove('on');$('#end').classList.add('on')}
+$('#ed').onchange=async e=>{const f=e.target,i=+f.dataset.i;if(f.type!='file'||isNaN(i))return;const out=[];
+ try{for(const x of[...f.files].slice(0,2))out.push(await rz(x));PH[QID[i]]=out;localStorage.setItem('pcb_ph',JSON.stringify(PH));$('#ph'+i).textContent='✓ '+out.length+' foto(s)'}catch(er){console.error(er);$('#ph'+i).textContent='Falha ao salvar (arquivo inválido ou armazenamento cheio)'}};
+/* ---------- Identifique os Componentes: múltipla escolha ---------- */
+CFGQ.pen=0;
+function quizStart(){if(S)clearInterval(S.tm);$('#menu').hidden=true;$('#game').hidden=true;$('#end').classList.remove('on');$('#quiz').hidden=false;
+ const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+ const o=sh(QB.map((_,i)=>i)),pos=sh(o.map((_,i)=>i%4));
+ const opts=o.map((id,k)=>{const it=QB[id],a=sh(QB.filter((x,i)=>i!=id&&x[0]==it[0]).map(x=>x[1])).slice(0,3);a.splice(pos[k],0,it[1]);return a});
+ Q={o,pos,opts,i:0,ok:0,bad:[],t0:Date.now(),ans:false,sel:-1};qShow()}
+function qHead(){$('#qp').textContent=(Q.i+1)+' / '+QB.length+' · Pontos '+Q.ok*CFGQ.pt}
+function qShow(){const it=QB[Q.o[Q.i]];Q.ans=false;Q.sel=-1;qHead();
+ $('#qq').textContent={'Peça':'Qual é o nome do componente apresentado?','Cabo':'Qual é o nome do cabo apresentado?','Conexão':'Qual é o nome da conexão destacada?'}[it[0]];
+ $('#qs').setAttribute('viewBox',vb(it[2]));$('#qs').innerHTML=qsvg(it[2]);
+ $('#qo').innerHTML=Q.opts[Q.i].map((t,k)=>'<button class="op" onclick="qSel('+k+')"><b>'+'ABCD'[k]+'.</b> '+t+'</button>').join('');
+ $('#qb').disabled=true;$('#qb').textContent='Confirmar resposta';$('#qf').textContent='';$('#qf').className='box'}
+function qSel(k){if(Q.ans)return;Q.sel=k;document.querySelectorAll('#qo .op').forEach((b,i)=>b.classList.toggle('sel',i==k));$('#qb').disabled=false}
+function qGo(){const it=QB[Q.o[Q.i]];
+ if(Q.ans){Q.i++;if(Q.i>=QB.length)return qEnd();return qShow()}
+ if(Q.sel<0)return;Q.ans=true;const ci=Q.pos[Q.i],ok=Q.sel==ci;
+ document.querySelectorAll('#qo .op').forEach((b,i)=>{b.disabled=true;b.classList.toggle('ok',i==ci);b.classList.toggle('bad',i==Q.sel&&!ok)});
+ if(ok)Q.ok++;else Q.bad.push(it);
+ $('#qf').className='box '+(ok?'ok':'err');
+ $('#qf').textContent=(ok?'Excelente! Você identificou corretamente: '+it[1]+'. ':'Não foi dessa vez! A resposta correta é '+it[1]+'. ')+it[4];
+ $('#qb').textContent=Q.i+1>=QB.length?'Ver relatório':'Próxima';qHead()}
+/* ---------- Histórico de avaliações (localStorage) ---------- */
+const HK='pcbuilder.hist.v1',HS={k:'d',dir:-1,cf:0};
+const hload=()=>{try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return(Array.isArray(a)?a:[]).filter(r=>r&&typeof r=='object').map((r,i)=>({id:String(r.id||'old-'+i),n:String(r.n||'Aluno sem nome'),s:+r.s||0,t:+r.t||0,e:+r.e||0,d:isNaN(Date.parse(r.d))?'1970-01-01T00:00:00.000Z':r.d}))}catch(e){return[]}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hsave(){try{const h=hload();h.push({id:Date.now()+'-'+Math.random().toString(36).slice(2,6),n:S.name,s:score(),t:secs(),e:S.err,d:new Date().toISOString()});localStorage.setItem(HK,JSON.stringify(h));S.saved=1;hpanel()}catch(e){console.error('Histórico não salvo',e)}}
+function histClose(){$('#end').classList.remove('on');$('#ed').style.maxWidth=''}
+function hist(k){if(k==='clear')HS.cf=1;else if(k==='no')HS.cf=0;else if(k==='yes'){try{localStorage.removeItem(HK)}catch(e){}HS.cf=0;hpanel()}
+ else if(k){HS.dir=HS.k==k?-HS.dir:(k=='d'||k=='s'?-1:1);HS.k=k}
+ const all=hload().sort((a,b)=>a.d<b.d?-1:1),att={},cn={};all.forEach(r=>{const n=r.n.trim().toLowerCase();cn[n]=(cn[n]||0)+1;att[r.id]=cn[n]});
+ const l=all.slice().sort((a,b)=>(a[HS.k]>b[HS.k]?1:a[HS.k]<b[HS.k]?-1:0)*HS.dir);
+ const th=([c,t])=>'<th style="text-align:left;padding:6px;border-bottom:1px solid var(--l)"><button data-k="'+c+'" onclick="hist(this.dataset.k)" style="border:0;background:none;padding:0;font-weight:600">'+t+(HS.k==c?(HS.dir>0?' ▲':' ▼'):'')+'</button></th>';
+ const td=r=>'<tr id="hr-'+esc(r.id)+'" style="'+(r.id==HS.sel?'background:#241c3a':'')+'"><td style="padding:6px">'+esc(r.n)+' <span style="color:var(--m)">(tentativa '+att[r.id]+')</span></td><td style="padding:6px">'+r.s+'/100</td><td style="padding:6px">'+fmt(r.t)+'</td><td style="padding:6px">'+new Date(r.d).toLocaleString('pt-BR')+'</td><td style="padding:6px">'+r.e+'</td></tr>';
+ const bt=(c,t,x)=>'<button data-k="'+c+'" onclick="hist(this.dataset.k)" '+(x||'')+'>'+t+'</button>';
+ $('#ed').style.maxWidth='760px';
+ $('#ed').innerHTML='<h2>Histórico de Avaliações</h2>'+(l.length?'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr>'+[['n','Aluno'],['s','Pontuação'],['t','Tempo'],['d','Data'],['e','Erros']].map(th).join('')+'</tr></thead><tbody>'+l.map(td).join('')+'</tbody></table></div>':'<p>Nenhuma avaliação registrada ainda. Conclua uma avaliação para ver o resultado aqui.</p>')
+  +'<div class="row"><button class="pri" onclick="histClose()">Voltar ao menu principal</button>'+(l.length?(HS.cf?bt('yes','Sim, apagar tudo','style="border-color:var(--e)"')+bt('no','Cancelar'):bt('clear','Limpar histórico')):'')+'</div>';
+ $('#end').classList.add('on')}
+/* ---------- Painel lateral do histórico (mesma fonte: localStorage) ---------- */
+function hpToggle(){$('#hp').classList.toggle('cl')}
+function hOpen(id){HS.sel=id;HS.k='d';HS.dir=-1;HS.cf=0;hist();const e=document.getElementById('hr-'+id);if(e)e.scrollIntoView({block:'center'})}
+function hpanel(){const el=$('#hp');if(!el)return;const cl=el.classList.contains('cl'),l=hload().sort((a,b)=>a.d<b.d?1:-1),fd=d=>d.startsWith('1970')?'—':new Date(d).toLocaleDateString('pt-BR');
+ el.innerHTML='<h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>HISTÓRICO DE AVALIAÇÕES<span class="ct" title="Total de avaliações registradas">'+l.length+'</span></h3><button id="hpt" onclick="hpToggle()">Mostrar ou ocultar a lista</button><div id="hlist">'+
+  (l.length?l.map((r,i)=>'<button class="hi" data-id="'+esc(r.id)+'" onclick="hOpen(this.dataset.id)"><b>'+String(i+1).padStart(2,'0')+'. '+esc(r.n)+'</b><br><span class="pt">'+r.s+' pontos</span> · '+fmt(r.t)+'<small>'+fd(r.d)+'</small></button>').join(''):'<p class="em">Nenhuma avaliação concluída ainda. Inicie o Modo Avaliação para registrar o primeiro resultado.</p>')+'</div>'+(l.length?'<button onclick="hist()" style="margin-top:10px">Ver histórico completo</button>':'');
+ el.classList.toggle('cl',cl)}
+hpanel();addEventListener('storage',e=>{if(e.key===HK||e.key===null)hpanel()});
+/* relatório da múltipla escolha (sobrepõe o qEnd das respostas digitadas) */
+function qEnd(){const n=QB.length,t=((Date.now()-Q.t0)/1000)|0,pct=Math.round(Q.ok/n*100),pts=Q.ok*CFGQ.pt;
+ const kv=(a,b)=>`<div><b>${b}</b><span>${a}</span></div>`,g=c=>{const l=Q.bad.filter(x=>x[0]==c);return l.length?`<b>${c=='Cabo'?'Cabos':c=='Peça'?'Peças':'Conexões'} a revisar</b><ul>${l.map(x=>`<li><b>${x[1]}</b> — ${x[4]}</li>`).join('')}</ul>`:''};
+ const rv=g('Peça')+g('Cabo')+g('Conexão');
+ $('#ed').innerHTML=`<h2>Relatório de identificação</h2><div class="kv">${kv('Percentual de acertos',pct+'%')}${kv('Pontuação',pts)}${kv('Acertos / erros',Q.ok+' / '+Q.bad.length)}${kv('Perguntas respondidas',n)}${kv('Tempo total',fmt(t))}</div>${rv||'<p>Nenhum item para revisar. Parabéns!</p>'}<div class="row"><button class="pri" onclick="quizStart()">Tentar novamente</button><button onclick="toMenu()">Menu inicial</button></div>`;$('#end').classList.add('on')}
+</script></body></html>
